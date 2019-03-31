@@ -5,9 +5,10 @@
 
 int flag = 0;
 int * flagptr= &flag;
+// Flag created for checking does the threads finish their job.
 
 void *Threadss(void *message) {
-
+  // Thread codes which converts void message to string then increase flag
    char* tid;
    tid = (char*) message;
     system(tid);
@@ -15,7 +16,9 @@ void *Threadss(void *message) {
    *flagptr = *flagptr+1;
    pthread_exit(NULL);
 }
+ 
 void SplitFirst(char * command){
+  // First method to split. Splits "|"
 char* token;
   token = strtok(command, "|");
 
@@ -28,7 +31,8 @@ char* token;
 
 }
 void SplitSecond(char *command){
-
+// second method to split. Splits ";" resets flag to zero and has an quit atr to quit after other 
+// commands are done.
      printf("echo:%s\n", command);
   char* token;
   pthread_t threads;
@@ -53,33 +57,37 @@ void SplitSecond(char *command){
 }
 
  void batchMode(char *commands){
+   // File reader for batch mode opens the file and calls SplitFirst with each line 
   FILE *file;
   char str[512];
-  char* filecommands = commands;
+  char* commmands = commands;
   int status = 1;
-
-  file = fopen(filecommands, "r");
+  int quit = 0;
+  file = fopen(commmands, "r");
   if (file == NULL) {
-    printf("Could not open file %s", filecommands);
-    return ;
+    printf("File not found", commmands);
+    return;
   }
   while (fgets(str, 512, file) != EOF && status != 0 && !feof(file)) {
     str[strcspn(str, "\n\r")] = 0;
     str[strcspn(str, "\r")] = 0;
-    printf("------------------------\nCommand : %s\n", str);
-  int c=0;
-while (str[c] != '\0') {
-      printf("\n  %c  \n", str[c]);
-      c++;
-   }    
-   
+
+   if ( !strcmp(str,"quit" ) )
+    quit = 1;
+    else {
    SplitFirst(str);
+    printf("________________________\n ");
+    }
   }
   fclose(file);
-
+  if (quit){
+    exit(0);
+    
+  }
 
  }
  int main(int argc, char** argv){
+   // Main function first checks for argc then if batch mode doesn't quit, continues with Interactive method until quit command.
 
   if (argc >1){
     batchMode(argv[1]);
@@ -91,7 +99,7 @@ while (str[c] != '\0') {
 
   inputptr = input;
 
-  printf("myshell:>");
+  printf("\n S H E L L:>");
 
   gets(inputptr);
   
@@ -99,7 +107,7 @@ while (str[c] != '\0') {
   while(strcmp(inputptr, "quit")!= 0) {   
       SplitFirst(inputptr);
 
-      printf("\n\n\n myshell:>");
+      printf("______________________________\n S H E L L:>");
      
       gets(inputptr);
 
